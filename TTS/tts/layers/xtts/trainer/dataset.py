@@ -79,6 +79,7 @@ class XTTSDataset(torch.utils.data.Dataset):
     def check_eval_samples(self):
         print(" > Filtering invalid eval samples!!")
         new_samples = []
+        print(f" > Amount of samples before filtering: {self.samples}")
         for sample in self.samples:
             try:
                 tseq, _, wav, _, _, _ = self.load_item(sample)

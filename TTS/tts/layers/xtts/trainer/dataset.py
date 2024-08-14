@@ -111,6 +111,10 @@ class XTTSDataset(torch.utils.data.Dataset):
         wav = load_audio(audiopath, self.sample_rate)
         if text is None or len(text.strip()) == 0:
             raise ValueError
+        
+        print(f"Wav file found: {wav}")
+        print(f"Wav file shape: {wav.shape[-1]}")
+
         if wav is None or wav.shape[-1] < (0.5 * self.sample_rate):
             # Ultra short clips are also useless (and can cause problems within some models).
             raise ValueError

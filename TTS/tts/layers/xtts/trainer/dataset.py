@@ -83,8 +83,13 @@ class XTTSDataset(torch.utils.data.Dataset):
         for sample in self.samples:
             try:
                 tseq, _, wav, _, _, _ = self.load_item(sample)
-            except:
+            except Exception as error:
+                print(" > There was an error with the sample: {error} ")
                 continue
+            
+            print(f" > Is max wav length: {self.max_wav_len is not None and wav.shape[-1] > self.max_wav_len}")
+            print(f" > Is max text length: {self.max_text_len is not None and tseq.shape[0] > self.max_text_len}")
+            
             # Basically, this audio file is nonexistent or too long to be supported by the dataset.
             if (
                 wav is None

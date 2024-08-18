@@ -14,6 +14,7 @@ from spacy.lang.es import Spanish
 from spacy.lang.ja import Japanese
 from spacy.lang.zh import Chinese
 from tokenizers import Tokenizer
+import logging 
 
 from TTS.tts.layers.xtts.zh_num2words import TextNorm as zh_num2words
 
@@ -592,7 +593,9 @@ DEFAULT_VOCAB_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "
 class VoiceBpeTokenizer:
     def __init__(self, vocab_file=None):
         self.tokenizer = None
+        logging.info(f"vocab_file: {vocab_file}")
         if vocab_file is not None:
+            logging.info(f"Tokenizer.from_file(vocal_file) = {Tokenizer.from_file(vocab_file)}")
             self.tokenizer = Tokenizer.from_file(vocab_file)
         self.char_limits = {
             "en": 250,

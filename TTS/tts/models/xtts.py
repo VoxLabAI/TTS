@@ -1,3 +1,4 @@
+import logging
 import os
 from dataclasses import dataclass
 
@@ -765,6 +766,7 @@ class Xtts(BaseTTS):
         if speaker_file_path is not None and os.path.exists(speaker_file_path):
             self.speaker_manager = SpeakerManager(speaker_file_path)
 
+        logging.info(f" > VoiceBpeTokenizer vocab_path = {vocab_path}")
         if os.path.exists(vocab_path):
             self.tokenizer = VoiceBpeTokenizer(vocab_file=vocab_path)
 

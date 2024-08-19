@@ -593,9 +593,9 @@ DEFAULT_VOCAB_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), "
 class VoiceBpeTokenizer:
     def __init__(self, vocab_file=None):
         self.tokenizer = None
-        logging.info(f"vocab_file: {vocab_file}")
+        print(f"vocab_file: {vocab_file}")
         if vocab_file is not None:
-            logging.info(f"Tokenizer.from_file(vocal_file) = {Tokenizer.from_file(vocab_file)}")
+            print(f"Tokenizer.from_file(vocal_file) = {Tokenizer.from_file(vocab_file)}")
             self.tokenizer = Tokenizer.from_file(vocab_file)
         self.char_limits = {
             "en": 250,

@@ -533,7 +533,8 @@ class Xtts(BaseTTS):
         for sent in text:
             sent = sent.strip().lower()
             text_tokens = torch.IntTensor(self.tokenizer.encode(sent, lang=language)).unsqueeze(0).to(self.device)
-
+            print(f"text_tokens.shape : {text_tokens.shape}")
+            print(f"text_tokens.shape[-1] : {text_tokens.shape[-1]}")
             assert (
                 text_tokens.shape[-1] < self.args.gpt_max_text_tokens
             ), " ❗ XTTS can only generate text with a maximum of 400 tokens."

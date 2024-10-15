@@ -15,7 +15,6 @@ from TTS.tts.layers.xtts.tokenizer import VoiceBpeTokenizer, split_sentence
 from TTS.tts.layers.xtts.xtts_manager import SpeakerManager, LanguageManager
 from TTS.tts.models.base_tts import BaseTTS
 from TTS.utils.io import load_fsspec
-from memory_profiler import profile
 
 init_stream_support()
 
@@ -731,7 +730,7 @@ class Xtts(BaseTTS):
 
         return checkpoint
 
-    @profile
+
     def load_checkpoint(
             self,
             config,

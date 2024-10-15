@@ -15,24 +15,25 @@ from TTS.tts.layers.xtts.tokenizer import VoiceBpeTokenizer, split_sentence
 from TTS.tts.layers.xtts.xtts_manager import SpeakerManager, LanguageManager
 from TTS.tts.models.base_tts import BaseTTS
 from TTS.utils.io import load_fsspec
+from memory_profiler import profile
 
 init_stream_support()
 
 
 def wav_to_mel_cloning(
-    wav,
-    mel_norms_file="../experiments/clips_mel_norms.pth",
-    mel_norms=None,
-    device=torch.device("cpu"),
-    n_fft=4096,
-    hop_length=1024,
-    win_length=4096,
-    power=2,
-    normalized=False,
-    sample_rate=22050,
-    f_min=0,
-    f_max=8000,
-    n_mels=80,
+        wav,
+        mel_norms_file="../experiments/clips_mel_norms.pth",
+        mel_norms=None,
+        device=torch.device("cpu"),
+        n_fft=4096,
+        hop_length=1024,
+        win_length=4096,
+        power=2,
+        normalized=False,
+        sample_rate=22050,
+        f_min=0,
+        f_max=8000,
+        n_mels=80,
 ):
     """
     Convert waveform to mel-spectrogram with hard-coded parameters for cloning.
@@ -273,7 +274,7 @@ class Xtts(BaseTTS):
         if self.args.gpt_use_perceiver_resampler:
             style_embs = []
             for i in range(0, audio.shape[1], 22050 * chunk_length):
-                audio_chunk = audio[:, i : i + 22050 * chunk_length]
+                audio_chunk = audio[:, i: i + 22050 * chunk_length]
 
                 # if the chunk is too short ignore it 
                 if audio_chunk.size(-1) < 22050 * 0.33:
@@ -319,20 +320,20 @@ class Xtts(BaseTTS):
         audio_16k = torchaudio.functional.resample(audio, sr, 16000)
         return (
             self.hifigan_decoder.speaker_encoder.forward(audio_16k.to(self.device), l2_norm=True)
-            .unsqueeze(-1)
-            .to(self.device)
+                .unsqueeze(-1)
+                .to(self.device)
         )
 
     @torch.inference_mode()
     def get_conditioning_latents(
-        self,
-        audio_path,
-        max_ref_length=30,
-        gpt_cond_len=6,
-        gpt_cond_chunk_len=6,
-        librosa_trim_db=None,
-        sound_norm_refs=False,
-        load_sr=22050,
+            self,
+            audio_path,
+            max_ref_length=30,
+            gpt_cond_len=6,
+            gpt_cond_chunk_len=6,
+            librosa_trim_db=None,
+            sound_norm_refs=False,
+            load_sr=22050,
     ):
         """Get the conditioning latents for the GPT model from the given audio.
 
@@ -421,23 +422,23 @@ class Xtts(BaseTTS):
 
     @torch.inference_mode()
     def full_inference(
-        self,
-        text,
-        ref_audio_path,
-        language,
-        # GPT inference
-        temperature=0.75,
-        length_penalty=1.0,
-        repetition_penalty=10.0,
-        top_k=50,
-        top_p=0.85,
-        do_sample=True,
-        # Cloning
-        gpt_cond_len=30,
-        gpt_cond_chunk_len=6,
-        max_ref_len=10,
-        sound_norm_refs=False,
-        **hf_generate_kwargs,
+            self,
+            text,
+            ref_audio_path,
+            language,
+            # GPT inference
+            temperature=0.75,
+            length_penalty=1.0,
+            repetition_penalty=10.0,
+            top_k=50,
+            top_p=0.85,
+            do_sample=True,
+            # Cloning
+            gpt_cond_len=30,
+            gpt_cond_chunk_len=6,
+            max_ref_len=10,
+            sound_norm_refs=False,
+            **hf_generate_kwargs,
     ):
         """
         This function produces an audio clip of the given text being spoken with the given reference voice.
@@ -502,22 +503,22 @@ class Xtts(BaseTTS):
 
     @torch.inference_mode()
     def inference(
-        self,
-        text,
-        language,
-        gpt_cond_latent,
-        speaker_embedding,
-        # GPT inference
-        temperature=0.75,
-        length_penalty=1.0,
-        repetition_penalty=10.0,
-        top_k=50,
-        top_p=0.85,
-        do_sample=True,
-        num_beams=1,
-        speed=1.0,
-        enable_text_splitting=False,
-        **hf_generate_kwargs,
+            self,
+            text,
+            language,
+            gpt_cond_latent,
+            speaker_embedding,
+            # GPT inference
+            temperature=0.75,
+            length_penalty=1.0,
+            repetition_penalty=10.0,
+            top_k=50,
+            top_p=0.85,
+            do_sample=True,
+            num_beams=1,
+            speed=1.0,
+            enable_text_splitting=False,
+            **hf_generate_kwargs,
     ):
         language = language.split("-")[0]  # remove the country code
         length_scale = 1.0 / max(speed, 0.05)
@@ -536,7 +537,7 @@ class Xtts(BaseTTS):
             print(f"text_tokens.shape : {text_tokens.shape}")
             print(f"text_tokens.shape[-1] : {text_tokens.shape[-1]}")
             assert (
-                text_tokens.shape[-1] < self.args.gpt_max_text_tokens
+                    text_tokens.shape[-1] < self.args.gpt_max_text_tokens
             ), " ❗ XTTS can only generate text with a maximum of 400 tokens."
 
             with torch.no_grad():
@@ -588,13 +589,13 @@ class Xtts(BaseTTS):
         """Handle chunk formatting in streaming mode"""
         wav_chunk = wav_gen[:-overlap_len]
         if wav_gen_prev is not None:
-            wav_chunk = wav_gen[(wav_gen_prev.shape[0] - overlap_len) : -overlap_len]
+            wav_chunk = wav_gen[(wav_gen_prev.shape[0] - overlap_len): -overlap_len]
         if wav_overlap is not None:
             # cross fade the overlap section
             if overlap_len > len(wav_chunk):
                 # wav_chunk is smaller than overlap_len, pass on last wav_gen
                 if wav_gen_prev is not None:
-                    wav_chunk = wav_gen[(wav_gen_prev.shape[0] - overlap_len) :]
+                    wav_chunk = wav_gen[(wav_gen_prev.shape[0] - overlap_len):]
                 else:
                     # not expecting will hit here as problem happens on last chunk
                     wav_chunk = wav_gen[-overlap_len:]
@@ -611,24 +612,24 @@ class Xtts(BaseTTS):
 
     @torch.inference_mode()
     def inference_stream(
-        self,
-        text,
-        language,
-        gpt_cond_latent,
-        speaker_embedding,
-        # Streaming
-        stream_chunk_size=20,
-        overlap_wav_len=1024,
-        # GPT inference
-        temperature=0.75,
-        length_penalty=1.0,
-        repetition_penalty=10.0,
-        top_k=50,
-        top_p=0.85,
-        do_sample=True,
-        speed=1.0,
-        enable_text_splitting=False,
-        **hf_generate_kwargs,
+            self,
+            text,
+            language,
+            gpt_cond_latent,
+            speaker_embedding,
+            # Streaming
+            stream_chunk_size=20,
+            overlap_wav_len=1024,
+            # GPT inference
+            temperature=0.75,
+            length_penalty=1.0,
+            repetition_penalty=10.0,
+            top_k=50,
+            top_p=0.85,
+            do_sample=True,
+            speed=1.0,
+            enable_text_splitting=False,
+            **hf_generate_kwargs,
     ):
         language = language.split("-")[0]  # remove the country code
         length_scale = 1.0 / max(speed, 0.05)
@@ -644,7 +645,7 @@ class Xtts(BaseTTS):
             text_tokens = torch.IntTensor(self.tokenizer.encode(sent, lang=language)).unsqueeze(0).to(self.device)
 
             assert (
-                text_tokens.shape[-1] < self.args.gpt_max_text_tokens
+                    text_tokens.shape[-1] < self.args.gpt_max_text_tokens
             ), " ❗ XTTS can only generate text with a maximum of 400 tokens."
 
             fake_inputs = self.gpt.compute_embeddings(
@@ -730,16 +731,17 @@ class Xtts(BaseTTS):
 
         return checkpoint
 
+    @profile
     def load_checkpoint(
-        self,
-        config,
-        checkpoint_dir=None,
-        checkpoint_path=None,
-        vocab_path=None,
-        eval=True,
-        strict=True,
-        use_deepspeed=False,
-        speaker_file_path=None,
+            self,
+            config,
+            checkpoint_dir=None,
+            checkpoint_path=None,
+            vocab_path=None,
+            eval=True,
+            strict=True,
+            use_deepspeed=False,
+            speaker_file_path=None,
     ):
         """
         Loads a checkpoint from disk and initializes the model's state and tokenizer.
